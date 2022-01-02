@@ -1,11 +1,13 @@
 import sys
-from time import sleep
+from time import sleep, time
 import threading, queue
 import requests
 import random
+import json
+import shutil
 
 if len(sys.argv) not in [2, 3]:
-  print(f'Usage: python3 {sys.argv[0]} <domain_list.txt> [number of lines to skip]')
+  print(f'Usage: python3 {sys.argv[0]} <domain_list.txt>')
   raise SystemExit
 
 try:
@@ -13,11 +15,6 @@ try:
 except IOError:
   stdout(f'Error: failed to read {sys.argv[1]}')
   raise SystemExit
-
-lines_to_skip = 0
-if len(sys.argv) == 3:
-  # Skipped lines
-  lines_to_skip = int(sys.argv[2])
 
 domain_queue = queue.Queue(maxsize=1000*10)
 
@@ -27,6 +24,36 @@ def stdout(*args):
   with log_lock:
     print(*args)
 
+# Progress backup
+try:
+  with open("./progress/progress.json", "r") as progress:
+    current_progress = json.loads(progress.read())
+except:
+  current_progress = { "lines_done": 0 }
+lines_to_skip = current_progress["lines_done"]
+
+PROGRESS_SAVE_INTERVAL = 15*60 # 15 minutes
+def save_progress():
+  # Backup progress file
+  try:
+    shutil.copyfile("./progress/progress.json", f'./progress/progress-{time()}')
+  except:
+    # File doesn't exist
+    pass
+
+  # Save new progress to file
+  with open("./progress/progress.json", "w") as progress:
+    progress.write(json.dumps(current_progress))
+
+  stdout("[progress] Saved progress")
+
+  # Schedule next call
+  threading.Timer(PROGRESS_SAVE_INTERVAL, save_progress).start()
+save_progress()
+
+def update_progress(lines_done):
+  current_progress['lines_done'] = lines_done
+
 # Counter
 domain_counter = lines_to_skip
 delta_counts = 0
@@ -35,6 +62,7 @@ def counter_main():
   global delta_counts
 
   while True:
+    update_progress(domain_counter)
     with counter_lock:
       stdout(f'[counter] {delta_counts} requests/sec ; {domain_counter} requests done')
 
@@ -49,6 +77,11 @@ def counter_increase():
 
 # Workers code
 TIMEOUT = 10 # seconds
+PATTERNS = [ # Pattern should be limited to ~1024 chars
+  (b".jpg", ".jpg"),
+  (b"FFD8FFE0", "JPG bytes"),
+  (b"-----BEGIN PGP MESSAGE-----", "PGP message")
+]
 
 def worker_main(id):
   def log(msg):
@@ -64,9 +97,42 @@ def worker_main(id):
 
     # Send request
     try:
-      r = requests.get(f'http://{domain}', headers={
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36'
-      }, timeout=TIMEOUT)
+      r = requests.get(f'http://{domain}',
+        headers={
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36'
+        },
+        timeout=TIMEOUT,
+        stream=True # Prevents heap fragmentation
+      )
+
+      # Reading content
+      buffer = b""
+
+      for chunk in r.iter_content(chunk_size=1024):
+        # Hash response
+        # TODO
+
+        # Check response for .jpg, JPG header and PGP messages
+        buffer = buffer[-1024:] + chunk
+
+        farthest_match = 0
+        while farthest_match >= 0:
+          farthest_match = -1
+
+          for pattern, name in PATTERNS:
+            try:
+              index = buffer.index(pattern)
+              farthest_match = max(farthest_match, index)
+
+              log(f'{name} in {domain}')
+            except ValueError:
+              pass
+
+          buffer = buffer[farthest_match+1:]
+
+      # Close request
+      r.close()
+
     except requests.TooManyRedirects:
       #log(f'Too many redirects for {domain}')
       pass
@@ -74,27 +140,12 @@ def worker_main(id):
       #log(f'Timeout for {domain}')
       pass
     except requests.ConnectionError as err:
-      # Only log other errors
       #if "Name or service not known" not in str(err):
         #log(f'Connection error for {domain}: {err}')
       pass
     except Exception as err:
-      #log(f'Error for {domain}: {err}')
+      log(f'Error for {domain}: {err}')
       pass
-
-    else:
-      # Hash response
-      # TODO
-
-      # Check response for .jpg, JPG header, and PGP messages
-      upper_response = r.text.upper()
-
-      if "-----BEGIN PGP MESSAGE-----" in upper_response:
-        log(f'PGP in {domain}')
-      if ".JPG" in upper_response:
-        log(f'.jpg in {domain}')
-      if "FFD8FFE0" in upper_response:
-        log(f'JPG bytes in {domain}')
 
     counter_increase()
     domain_queue.task_done()
@@ -126,7 +177,6 @@ for index, line in enumerate(domains):
     continue
 
   domain = line[:-1] # Remove newline
-
   domain_queue.put(domain)
 
 stdout('[main] All domains sent to the queue')
