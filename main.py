@@ -5,6 +5,7 @@ import requests
 import random
 import json
 import shutil
+from dwh_hashkit import dwh_hashkit
 
 if len(sys.argv) not in [2, 3]:
   print(f'Usage: python3 {sys.argv[0]} <domain_list.txt>')
@@ -83,6 +84,10 @@ PATTERNS = [ # Pattern should be limited to ~1024 chars
   (b"-----BEGIN PGP MESSAGE-----", "PGP message")
 ]
 
+def dwh_found(algorithm, url, in_content):
+  with open('./dwh_found', 'a') as f:
+    f.write(f"DWH found with algorithm {algorithm}. URL: {url}. In content: {in_content}\n")
+
 def worker_main(id):
   def log(msg):
     stdout(f'[{id}] {msg}')
@@ -107,10 +112,11 @@ def worker_main(id):
 
       # Reading content
       buffer = b""
+      hashbox = dwh_hashkit.Hashbox()
 
       for chunk in r.iter_content(chunk_size=1024):
         # Hash response
-        # TODO
+        hashbox.update(chunk)
 
         # Check response for .jpg, JPG header and PGP messages
         buffer = buffer[-1024:] + chunk
@@ -129,6 +135,17 @@ def worker_main(id):
               pass
 
           buffer = buffer[farthest_match+1:]
+
+      match = hashbox.final()
+      if match:
+        log(f"Found the DWH with algorithm {match}. URL: {r.url}")
+        dwh_found(match, r.url, True)
+
+      # Hash URL
+      match = dwh_hashkit.check(r.url.encode())
+      if match:
+        log(f"Found the DWH with algorithm {match}. URL: {r.url}")
+        dwh_found(match, r.url, False)
 
       # Close request
       r.close()
