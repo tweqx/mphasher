@@ -14,7 +14,7 @@ if len(sys.argv) not in [2, 3]:
 try:
   domains = open(sys.argv[1], 'r')
 except IOError:
-  stdout(f'Error: failed to read {sys.argv[1]}')
+  print(f'Error: failed to read {sys.argv[1]}')
   raise SystemExit
 
 domain_queue = queue.Queue(maxsize=1000*10)
