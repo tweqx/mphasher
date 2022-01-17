@@ -1,0 +1,13 @@
+PGP messages:
+  chinagfw.org [4]
+  deedbot.org [9]
+  opencontacts.org [1]
+  openkey.org [1]
+  openmail.org [1]
+  openmessage.org [1]
+  opensuite.org [1]
+  saltpack.org [1]
+  shoestringfoundation.org [1]
+  wilane.org [1]
+  santhie.wilane.org [1]
+  zq3q.org [7]

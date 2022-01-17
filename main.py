@@ -22,8 +22,9 @@ domain_queue = queue.Queue(maxsize=1000*10)
 # Printing to stdout
 log_lock = threading.Lock()
 def stdout(*args):
-  with log_lock:
-    print(*args)
+#  with log_lock:
+#    print(*args)
+  print(*args)
 
 # Progress backup
 try:
@@ -64,8 +65,7 @@ def counter_main():
 
   while True:
     update_progress(domain_counter)
-    with counter_lock:
-      stdout(f'[counter] {delta_counts} requests/sec ; {domain_counter} requests done')
+    stdout(f'[counter] {time()} {delta_counts} requests/sec ; {domain_counter} requests done')
 
     delta_counts = 0
     sleep(1)
@@ -114,6 +114,8 @@ def worker_main(id):
       buffer = b""
       hashbox = dwh_hashkit.Hashbox()
 
+      jpg_found = 0
+
       for chunk in r.iter_content(chunk_size=1024):
         # Hash response
         hashbox.update(chunk)
@@ -130,11 +132,17 @@ def worker_main(id):
               index = buffer.index(pattern)
               farthest_match = max(farthest_match, index)
 
-              log(f'{name} in {domain}')
+              if pattern == b'.jpg':
+                jpg_found += 1
+              else:
+                log(f'{name} in {domain}')
             except ValueError:
               pass
 
           buffer = buffer[farthest_match+1:]
+
+      if jpg_found > 0:
+        log(f'{jpg_found} .jpg found in {domain}')
 
       match = hashbox.final()
       if match:
