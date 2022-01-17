@@ -1,13 +1,3 @@
-PGP messages:
-  chinagfw.org [4]
-  deedbot.org [9]
-  opencontacts.org [1]
-  openkey.org [1]
-  openmail.org [1]
-  openmessage.org [1]
-  opensuite.org [1]
-  saltpack.org [1]
-  shoestringfoundation.org [1]
-  wilane.org [1]
-  santhie.wilane.org [1]
-  zq3q.org [7]
+version https://git-lfs.github.com/spec/v1
+oid sha256:ec18ab7eb57ec51d53275dd369e398e7c13c2dfe6357c18f6c9f4f32ab2a0f5e
+size 260
