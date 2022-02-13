@@ -5,3 +5,7 @@ runs/list_org.txt filter=lfs diff=lfs merge=lfs -text
 runs/numbers.txt filter=lfs diff=lfs merge=lfs -text
 runs/org_jpgs.txt filter=lfs diff=lfs merge=lfs -text
 runs/org_pgp.txt filter=lfs diff=lfs merge=lfs -text
+runs/net_jpgs.txt filter=lfs diff=lfs merge=lfs -text
+runs/output_net.txt filter=lfs diff=lfs merge=lfs -text
+runs/list_net.txt filter=lfs diff=lfs merge=lfs -text
+runs/net_pgp.txt filter=lfs diff=lfs merge=lfs -text
