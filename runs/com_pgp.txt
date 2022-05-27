@@ -1,0 +1,34 @@
+Keybase
+ blitzio.com
+ code162.com
+ codyrgardner.com
+ colinmcintosh.com
+ getdoxbox.com
+ jennifermilano.com
+ pmoust.com
+ sonolumin.com
+ wesaugur.com
+ wesleyaugur.com
+ wilane.com
+
+Company/personal website:
+ blockpath.com (cryptocurrency)
+ cleantechadvisory.com (tech company?)
+ ed-wray.com (photography)
+ frontierintel.com (infosec)
+ doctormckay.com (developper)
+ gunargessner.com (devlopper blog)
+ inyourbits.com (blog)
+ kevincools.com (graphic designer)
+ loshin.com (blog)
+ lukeogburn.com (developper blog)
+ peculiarplace.com (blog about the bible?)
+
+Misc/Weird:
+ 02075535.com: Part of an unrealted ARG, for more information see https://discord.com/channels/572330844056715284/588898466512633876/942420834088271902
+ gikade.com: website part of a CTF? Random website?
+ hanauma-bay-hawaii.com: hawaii tourist website? Why is an invalid PGP message hidden in an HTML comment?
+ hoopstress.com: contains a random 256 hex string and a PGP message hidden within a HTML comment? The PGP signature is owned by Steven Baltakatei Sandoval, a developper.
+ indigenize.com: website about native americans/indigneous people? Within an HTML comment there is a malformatted PGP message and a hexstring
+ wattmarck.com: emulates a windows 95/98-type interface about a music record company? Perhaps an ARG?
+ ca.mailpal.com, ca.srve.com, emsvr.com, my.guardpuppy.com: redirects to http://www.emsvr.com/746,184,0872,934.html which seems to be a company website about some kind of website protection? The code contains a lot of obfuscated JS
